@@ -3,9 +3,7 @@ package com.udacity.vehicles.api;
 import static org.hamcrest.Matchers.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -117,12 +115,12 @@ public class CarControllerTest {
          *   a vehicle by ID. This should utilize the car from `getCar()` below.
          */
 
-        mvc.perform(get(new URI("/cars"))
+        mvc.perform(get(new URI("/cars/1"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("\"condition\":\"USED\"")));
+                .andExpect(jsonPath("$.id", is(1)));
     }
 
     /**
@@ -142,6 +140,22 @@ public class CarControllerTest {
         mvc.perform(delete(new URI("/cars/1")))
                 .andExpect(status().isNoContent());
     }
+
+    @Test
+    public void updateCar() throws Exception {
+
+        Car car = getCar();
+        car.setCondition(Condition.NEW);
+        mvc.perform(put("/cars/{id}", 1L)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json.write(car).getJson())
+                .contentType(MediaType.APPLICATION_JSON_UTF8)
+                .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.condition", is(Condition.NEW.toString())));
+
+    }
+
 
     /**
      * Creates an example Car object for use in testing.
